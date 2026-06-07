@@ -112,6 +112,29 @@ function ChipStack({ amount }: { amount: number }) {
   );
 }
 
+const MODEL_BY_NAME: Record<string, string> = {
+  Ada: "gpt-4.1-nano",
+  Boris: "gpt-5-nano",
+  Cleo: "gpt-4.1-nano",
+};
+
+function ModelBadge({ model }: { model: string }) {
+  const premium = model === "gpt-5-nano";
+  return (
+    <div
+      className={`flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[9px] leading-none ${
+        premium
+          ? "border-violet-300 bg-gradient-to-r from-violet-100 to-fuchsia-100 text-violet-700 shadow-sm"
+          : "border-neutral-300 bg-neutral-100 text-neutral-600"
+      }`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${premium ? "bg-violet-500" : "bg-emerald-500"}`} />
+      {model}
+      {premium && <span className="text-fuchsia-500">✦</span>}
+    </div>
+  );
+}
+
 function Seat({ p, active, isWinner }: { p: Player; active: boolean; isWinner: boolean }) {
   return (
     <div
@@ -123,13 +146,16 @@ function Seat({ p, active, isWinner }: { p: Player; active: boolean; isWinner: b
             : "border-amber-900/15 bg-white/70 shadow-sm"
       } ${p.folded ? "opacity-40 grayscale" : "opacity-100"}`}
     >
-      <div className="flex items-center gap-1.5 text-sm font-semibold text-neutral-800">
-        <span>{p.name}</span>
-        {p.is_human && <span className="rounded bg-emerald-600 px-1.5 text-[11px] text-white">you</span>}
-        {p.all_in && <span className="rounded bg-red-600 px-1.5 text-[11px] text-white">all-in</span>}
-        {isWinner && (
-          <span className="rounded bg-gradient-to-r from-amber-400 to-yellow-500 px-1.5 text-[11px] font-bold text-black">winner</span>
-        )}
+      <div className="flex flex-col items-center gap-1">
+        <div className="flex items-center gap-1.5 text-sm font-semibold text-neutral-800">
+          <span>{p.name}</span>
+          {p.is_human && <span className="rounded bg-emerald-600 px-1.5 text-[11px] text-white">you</span>}
+          {p.all_in && <span className="rounded bg-red-600 px-1.5 text-[11px] text-white">all-in</span>}
+          {isWinner && (
+            <span className="rounded bg-gradient-to-r from-amber-400 to-yellow-500 px-1.5 text-[11px] font-bold text-black">winner</span>
+          )}
+        </div>
+        {!p.is_human && <ModelBadge model={MODEL_BY_NAME[p.name] || "gpt-4.1-nano"} />}
       </div>
       <div className="flex items-end gap-2">
         <div className="flex gap-1">
