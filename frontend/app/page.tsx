@@ -118,10 +118,10 @@ function MossPanel() {
   }, []);
 
   return (
-    <aside className="w-full shrink-0 rounded-2xl border border-fuchsia-500/30 bg-black p-4 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:w-[380px] lg:overflow-y-auto">
+    <aside className="mt-6 w-full rounded-2xl border border-fuchsia-500/30 bg-black p-4 lg:fixed lg:right-0 lg:top-0 lg:mt-0 lg:h-screen lg:w-[380px] lg:overflow-y-auto lg:rounded-none lg:border-0 lg:border-l">
       <div className="mb-3 flex items-center gap-2 border-b border-white/10 pb-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/moss-logo.png" alt="MOSS" className="h-7 w-7" />
+        <img src="/moss-logo.png" alt="MOSS" className="h-11 w-11 brightness-0 invert" />
         <div className="leading-tight">
           <div className="font-bold tracking-wide text-white">
             MOSS<span className="text-fuchsia-400"> retrieval</span>
@@ -243,8 +243,8 @@ export default function Home() {
   const winners = game?.winner?.indices || [];
 
   return (
-    <div className="flex min-h-screen flex-col gap-6 p-6 lg:flex-row lg:items-start">
-      <main className="mx-auto flex w-full max-w-4xl flex-col gap-4 lg:mx-0">
+    <div className="min-h-screen p-6 lg:pr-[404px]">
+      <main className="mx-auto flex w-full max-w-4xl flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">
           Voice Poker <span className="text-sm font-normal text-neutral-400">Texas Hold&apos;em vs bots</span>
