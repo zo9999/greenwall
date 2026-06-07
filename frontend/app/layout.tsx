@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Triple — AI Agents for CRE",
-  description: "AI agents built for commercial real estate brokerages.",
+  title: "Voice Poker",
+  description: "Voice-controlled Texas Hold'em against LLM bots.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

@@ -1,0 +1,25 @@
+# Secrets — never commit
+env_script.sh
+.env.deploy
+.insforge/
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+
+# InsForge & AI agent skills
+.insforge
+.agent
+.agents
+.augment
+.claude
+.cline
+.github/copilot*
+.kilocode
+.qoder
+.qwen
+.roo
+.trae
+.windsurf
