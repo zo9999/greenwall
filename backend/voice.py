@@ -3,11 +3,16 @@
 The three tools mirror the plan: read hand state (a struct lookup), get strategy
 advice (MOSS retrieval), and submit an action (with the agent confirming first).
 """
+import collections
 import json
+import time
 
 import advice
 import engine
 import store
+
+_TRANSCRIPT = collections.deque(maxlen=40)  # live phone transcript, newest first
+_TOOLS = collections.deque(maxlen=40)  # agent tool-calls, newest first
 
 
 def _speak_cards(cards):
@@ -67,6 +72,27 @@ def handle_submit_action(args):
     store.save_state(row["id"], state)
     confirm = f"Done. You chose {action}" + (f" to {amount}." if action == "raise" else ".")
     return confirm + " " + speak_state(state)
+
+
+def record_message(data):
+    """Capture Vapi transcript events for the live on-screen feed."""
+    msg = data.get("message", data) or {}
+    if msg.get("type") == "transcript" and msg.get("transcriptType") == "final":
+        text = (msg.get("transcript") or "").strip()
+        if text:
+            _TRANSCRIPT.appendleft({"role": msg.get("role", "user"), "text": text, "ts": time.time()})
+
+
+def record_tool(name, args):
+    label = name
+    if name == "submit_action":
+        a = args or {}
+        label = "submit_action: " + str(a.get("action", "")) + (f" {a.get('amount')}" if a.get("action") == "raise" else "")
+    _TOOLS.appendleft({"name": name, "label": label, "ts": time.time()})
+
+
+def get_voice_feed():
+    return {"transcript": list(_TRANSCRIPT), "tools": list(_TOOLS)}
 
 
 def dispatch(name, args):

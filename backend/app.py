@@ -50,12 +50,22 @@ def moss_feed():
     return jsonify(advice.get_feed())
 
 
+@app.get("/voice/feed")
+def voice_feed():
+    return jsonify(voice.get_voice_feed())
+
+
 @app.post("/vapi")
 def vapi_webhook():
-    """Single webhook for all Vapi tool calls."""
+    """Single webhook for all Vapi messages: transcript events + tool calls."""
     data = request.get_json(force=True, silent=True) or {}
+    voice.record_message(data)
+    calls = voice.parse_tool_calls(data)
+    if not calls:
+        return jsonify({})
     results = []
-    for cid, name, args in voice.parse_tool_calls(data):
+    for cid, name, args in calls:
+        voice.record_tool(name, args)
         try:
             result = voice.dispatch(name, args)
         except Exception as e:

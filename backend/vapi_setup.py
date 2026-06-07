@@ -66,6 +66,7 @@ def create_assistant():
         "voice": {"provider": "openai", "voiceId": "alloy"},
         "transcriber": {"provider": "deepgram", "model": "nova-2", "language": "en"},
         "server": {"url": WEBHOOK},
+        "serverMessages": ["transcript", "tool-calls", "status-update", "conversation-update", "end-of-call-report"],
     }
     r = requests.post(f"{VAPI}/assistant", headers=H, json=body, timeout=30)
     r.raise_for_status()

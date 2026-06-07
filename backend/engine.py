@@ -326,6 +326,7 @@ def public_view(state):
         "to_act": state["to_act"],
         "awaiting_human": state["awaiting_human"],
         "human_index": state["human_index"],
+        "dealer": state["dealer"],
         "players": players,
         "log": state["log"],
         "winner": state["winner"],
