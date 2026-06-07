@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Voice Poker",
+  title: "Agentic Voice Poker",
   description: "Voice-controlled Texas Hold'em against LLM bots.",
 };
 

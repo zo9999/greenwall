@@ -315,7 +315,7 @@ export default function Home() {
       <main className="mx-auto flex w-full max-w-4xl flex-col gap-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-extrabold tracking-tight text-neutral-900">
-            Voice <span className="text-[#c8851a]">Poker</span>
+            Agentic Voice <span className="text-[#c8851a]">Poker</span>
             <span className="ml-2 text-sm font-normal text-neutral-500">Texas Hold&apos;em vs bots</span>
           </h1>
           <button
