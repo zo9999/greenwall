@@ -38,15 +38,15 @@ function Card({ c, hidden, delay = 0 }: { c?: string | null; hidden?: boolean; d
   if (hidden) {
     return (
       <div
-        className="deal-in flex h-14 w-10 items-center justify-center rounded-md border border-amber-300/50 bg-gradient-to-br from-rose-700 via-red-800 to-amber-800 shadow-md"
+        className="deal-in flex h-20 w-14 items-center justify-center rounded-lg border border-amber-300/50 bg-gradient-to-br from-rose-700 via-red-800 to-amber-800 shadow-md"
         style={{ animationDelay: `${delay}ms` }}
       >
-        <div className="h-9 w-6 rounded-sm border border-amber-200/40 bg-[repeating-linear-gradient(45deg,transparent,transparent_3px,rgba(251,191,36,0.35)_3px,rgba(251,191,36,0.35)_4px)]" />
+        <div className="h-14 w-9 rounded-sm border border-amber-200/40 bg-[repeating-linear-gradient(45deg,transparent,transparent_4px,rgba(251,191,36,0.35)_4px,rgba(251,191,36,0.35)_5px)]" />
       </div>
     );
   }
   if (!c) {
-    return <div className="h-14 w-10 rounded-md border border-dashed border-amber-900/20 bg-amber-900/5" />;
+    return <div className="h-20 w-14 rounded-lg border border-dashed border-amber-900/20 bg-amber-900/5" />;
   }
   const rank = c[0] === "T" ? "10" : c[0];
   const suit = c[1] as keyof typeof SUIT;
@@ -54,18 +54,65 @@ function Card({ c, hidden, delay = 0 }: { c?: string | null; hidden?: boolean; d
   const col = red ? "text-rose-600" : "text-neutral-900";
   return (
     <div
-      className="deal-in relative h-14 w-10 rounded-md border border-black/15 bg-gradient-to-br from-white to-neutral-100 shadow-md"
+      className="deal-in relative h-20 w-14 rounded-lg border border-black/15 bg-gradient-to-br from-white to-neutral-100 shadow-md"
       style={{ animationDelay: `${delay}ms` }}
     >
-      <div className={`absolute left-1 top-0.5 flex flex-col items-center leading-none ${col}`}>
-        <span className="text-[11px] font-bold">{rank}</span>
-        <span className="text-[9px]">{SUIT[suit]}</span>
+      <div className={`absolute left-1.5 top-1 flex flex-col items-center leading-none ${col}`}>
+        <span className="text-sm font-bold">{rank}</span>
+        <span className="text-[11px]">{SUIT[suit]}</span>
       </div>
-      <div className={`absolute inset-0 flex items-center justify-center text-xl ${col}`}>{SUIT[suit]}</div>
-      <div className={`absolute bottom-0.5 right-1 flex rotate-180 flex-col items-center leading-none ${col}`}>
-        <span className="text-[11px] font-bold">{rank}</span>
-        <span className="text-[9px]">{SUIT[suit]}</span>
+      <div className={`absolute inset-0 flex items-center justify-center text-3xl ${col}`}>{SUIT[suit]}</div>
+      <div className={`absolute bottom-1 right-1.5 flex rotate-180 flex-col items-center leading-none ${col}`}>
+        <span className="text-sm font-bold">{rank}</span>
+        <span className="text-[11px]">{SUIT[suit]}</span>
       </div>
+    </div>
+  );
+}
+
+const CHIP_DENOMS = [
+  { v: 500, bg: "bg-violet-600", edge: "border-violet-200" },
+  { v: 100, bg: "bg-neutral-800", edge: "border-neutral-400" },
+  { v: 25, bg: "bg-emerald-600", edge: "border-emerald-200" },
+  { v: 10, bg: "bg-sky-600", edge: "border-sky-200" },
+  { v: 5, bg: "bg-red-600", edge: "border-red-200" },
+  { v: 1, bg: "bg-neutral-100", edge: "border-neutral-400" },
+];
+
+function ChipStack({ amount }: { amount: number }) {
+  if (!amount || amount <= 0) return null;
+  let rem = amount;
+  const piles: { v: number; bg: string; edge: string; count: number }[] = [];
+  for (const d of CHIP_DENOMS) {
+    const n = Math.floor(rem / d.v);
+    if (n > 0) {
+      piles.push({ ...d, count: n });
+      rem -= n * d.v;
+    }
+  }
+  return (
+    <div className="flex items-end gap-1.5">
+      {piles.map((p) => {
+        const visible = Math.min(p.count, 5);
+        return (
+          <div key={p.v} className="flex flex-col items-center">
+            <div className="relative w-6" style={{ height: `${24 + (visible - 1) * 6}px` }}>
+              {Array.from({ length: visible }).map((_, j) => (
+                <div
+                  key={j}
+                  className={`absolute left-0 h-6 w-6 rounded-full border-[3px] border-dashed shadow ${p.edge} ${p.bg}`}
+                  style={{ bottom: `${j * 6}px` }}
+                >
+                  <div className="absolute inset-1 rounded-full border border-white/40" />
+                </div>
+              ))}
+            </div>
+            <span className="mt-0.5 text-[9px] font-semibold text-neutral-400">
+              {p.count > 5 ? `${p.v}×${p.count}` : p.v}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -89,9 +136,12 @@ function Seat({ p, active, isWinner }: { p: Player; active: boolean; isWinner: b
           <span className="rounded bg-gradient-to-r from-amber-400 to-yellow-500 px-1.5 text-[11px] font-bold text-black">winner</span>
         )}
       </div>
-      <div className="flex gap-1">
-        <Card c={p.hole?.[0]} hidden={!p.folded && p.hole === null} />
-        <Card c={p.hole?.[1]} hidden={!p.folded && p.hole === null} />
+      <div className="flex items-end gap-2">
+        <div className="flex gap-1">
+          <Card c={p.hole?.[0]} hidden={!p.folded && p.hole === null} />
+          <Card c={p.hole?.[1]} hidden={!p.folded && p.hole === null} />
+        </div>
+        <ChipStack amount={p.chips} />
       </div>
       <div className="text-center">
         <div className="font-mono text-sm font-semibold text-emerald-700">{p.chips}</div>
@@ -325,11 +375,14 @@ export default function Home() {
                   <Card key={game.board[i] ?? `empty-${i}`} c={game.board[i]} delay={i * 90} />
                 ))}
               </div>
-              <div
-                key={game.pot}
-                className="pot-bump rounded-full bg-black/40 px-4 py-1 font-mono font-semibold text-amber-300 ring-1 ring-amber-400/30"
-              >
-                pot {game.pot}
+              <div className="flex flex-col items-center gap-2">
+                {game.pot > 0 && <ChipStack amount={game.pot} />}
+                <div
+                  key={game.pot}
+                  className="pot-bump rounded-full bg-black/40 px-4 py-1 font-mono font-semibold text-amber-300 ring-1 ring-amber-400/30"
+                >
+                  pot {game.pot}
+                </div>
               </div>
               {game.winner && (
                 <div className="text-lg font-bold text-amber-300">
