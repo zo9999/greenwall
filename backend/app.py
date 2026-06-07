@@ -3,6 +3,7 @@ import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
+import advice
 import engine
 import store
 import voice
@@ -42,6 +43,11 @@ def game_action():
         return jsonify({"error": msg}), 400
     store.save_state(row["id"], state)
     return jsonify(engine.public_view(state))
+
+
+@app.get("/moss/feed")
+def moss_feed():
+    return jsonify(advice.get_feed())
 
 
 @app.post("/vapi")

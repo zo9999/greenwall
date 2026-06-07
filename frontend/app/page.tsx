@@ -79,6 +79,111 @@ function Seat({ p, active, isWinner }: { p: Player; active: boolean; isWinner: b
   );
 }
 
+type FeedEvent = {
+  query: string;
+  latency_ms: number | null;
+  index: string;
+  ts: number;
+  results: { text: string; score: number; street: string }[];
+};
+
+const STREET_COLOR: Record<string, string> = {
+  preflop: "bg-sky-500/20 text-sky-300",
+  flop: "bg-emerald-500/20 text-emerald-300",
+  turn: "bg-amber-500/20 text-amber-300",
+  river: "bg-rose-500/20 text-rose-300",
+  general: "bg-violet-500/20 text-violet-300",
+};
+
+function MossPanel() {
+  const [feed, setFeed] = useState<FeedEvent[]>([]);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const r = await fetch(`${API}/moss/feed`);
+        if (r.ok) setFeed(await r.json());
+      } catch {
+        /* backend not up */
+      }
+    };
+    load();
+    const poll = setInterval(load, 1000);
+    const tick = setInterval(() => setNow(Date.now()), 1000);
+    return () => {
+      clearInterval(poll);
+      clearInterval(tick);
+    };
+  }, []);
+
+  return (
+    <aside className="w-full shrink-0 rounded-2xl border border-fuchsia-500/30 bg-black p-4 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:w-[380px] lg:overflow-y-auto">
+      <div className="mb-3 flex items-center gap-2 border-b border-white/10 pb-3">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/moss-logo.png" alt="MOSS" className="h-7 w-7" />
+        <div className="leading-tight">
+          <div className="font-bold tracking-wide text-white">
+            MOSS<span className="text-fuchsia-400"> retrieval</span>
+          </div>
+          <div className="text-[10px] uppercase tracking-widest text-emerald-400">live · in-process · zero network hops</div>
+        </div>
+      </div>
+
+      <div className="mb-3 text-[10px] leading-snug text-neutral-500">
+        Semantic search runs <span className="text-cyan-400">inside the backend</span> — no 200–500ms
+        round trip to a remote vector DB.
+      </div>
+
+      {feed.length === 0 && (
+        <div className="flex items-center justify-center gap-2 py-10 text-center text-sm text-neutral-500">
+          <span className="h-2 w-2 animate-pulse rounded-full bg-fuchsia-500" />
+          Ask the phone agent for advice to see live retrievals…
+        </div>
+      )}
+
+      <div className="flex flex-col gap-3">
+        {feed.map((e, i) => {
+          const fast = e.latency_ms !== null && e.latency_ms < 30;
+          return (
+            <div key={i} className="rounded-xl border border-white/10 bg-neutral-950 p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span
+                  className={`rounded-md px-2 py-0.5 font-mono text-sm font-bold ${
+                    fast
+                      ? "bg-emerald-500/20 text-emerald-300 shadow-[0_0_12px_0] shadow-emerald-500/50"
+                      : "bg-amber-500/20 text-amber-300"
+                  }`}
+                >
+                  {e.latency_ms !== null ? `${e.latency_ms} ms` : "—"}
+                </span>
+                <span className="text-[10px] text-neutral-500">{Math.max(0, Math.round(now / 1000 - e.ts))}s ago</span>
+              </div>
+              <div className="mb-2">
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-cyan-400">
+                  query → {e.index}
+                </div>
+                <div className="text-xs text-amber-200">{e.query}</div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {e.results.map((r, j) => (
+                  <div key={j} className="flex gap-2 text-xs">
+                    <span className="shrink-0 rounded bg-fuchsia-500/20 px-1.5 font-mono text-fuchsia-300">{r.score}</span>
+                    <span className={`h-fit shrink-0 rounded px-1.5 text-[10px] uppercase ${STREET_COLOR[r.street] || "bg-neutral-700 text-neutral-300"}`}>
+                      {r.street}
+                    </span>
+                    <span className="text-neutral-300">{r.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </aside>
+  );
+}
+
 export default function Home() {
   const [game, setGame] = useState<Game | null>(null);
   const [raise, setRaise] = useState(0);
@@ -138,7 +243,8 @@ export default function Home() {
   const winners = game?.winner?.indices || [];
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-4 p-6">
+    <div className="flex min-h-screen flex-col gap-6 p-6 lg:flex-row lg:items-start">
+      <main className="mx-auto flex w-full max-w-4xl flex-col gap-4 lg:mx-0">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">
           Voice Poker <span className="text-sm font-normal text-neutral-400">Texas Hold&apos;em vs bots</span>
@@ -257,6 +363,8 @@ export default function Home() {
           </div>
         </>
       )}
-    </main>
+      </main>
+      <MossPanel />
+    </div>
   );
 }

@@ -4,7 +4,9 @@ Game state stays in plain memory (a struct lookup); strategy is the fuzzy,
 big knowledge base, so that part lives in MOSS and is retrieved live.
 """
 import asyncio
+import collections
 import os
+import time
 
 import engine
 
@@ -14,6 +16,7 @@ SUIT_WORD = {"s": "spades", "h": "hearts", "d": "diamonds", "c": "clubs"}
 
 _client = None
 _loaded = False
+_FEED = collections.deque(maxlen=25)  # recent retrievals, newest first (for the live panel)
 
 
 def _get_client():
@@ -24,24 +27,47 @@ def _get_client():
     return _client
 
 
-async def _retrieve(query, top_k):
+def _ensure_loaded():
     global _loaded
-    from moss import QueryOptions
-    client = _get_client()
     if not _loaded:
-        await client.load_index(INDEX)
+        asyncio.run(_get_client().load_index(INDEX))
         _loaded = True
-    res = await client.query(INDEX, query, QueryOptions(top_k=top_k))
-    return [{"text": d.text, "score": round(float(d.score), 3), "street": d.metadata.get("street")} for d in res.docs]
+
+
+def _format(docs):
+    return [{"text": d.text, "score": round(float(d.score), 3), "street": d.metadata.get("street")} for d in docs]
 
 
 def retrieve(query, top_k=3):
     if not os.environ.get("MOSS_API_KEY"):
         return []
     try:
-        return asyncio.run(_retrieve(query, top_k))
+        from moss import QueryOptions
+        _ensure_loaded()
+        client = _get_client()
+        t0 = time.perf_counter()
+        try:
+            # Direct synchronous in-process search: the true retrieval latency,
+            # without asyncio thread-dispatch overhead inflating the number.
+            res = client._manager.query_multi_index_text([INDEX], query, top_k, None)
+        except Exception:
+            res = asyncio.run(client.query(INDEX, query, QueryOptions(top_k=top_k)))
+        latency = (time.perf_counter() - t0) * 1000.0
+        results = _format(res.docs)
     except Exception:
         return []
+    _FEED.appendleft({
+        "query": query,
+        "latency_ms": round(latency, 3),
+        "results": results,
+        "index": INDEX,
+        "ts": time.time(),
+    })
+    return results
+
+
+def get_feed():
+    return list(_FEED)
 
 
 def card_words(c):
