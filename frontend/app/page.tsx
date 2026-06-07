@@ -95,21 +95,16 @@ function ChipStack({ amount }: { amount: number }) {
       {piles.map((p) => {
         const visible = Math.min(p.count, 5);
         return (
-          <div key={p.v} className="flex flex-col items-center">
-            <div className="relative w-6" style={{ height: `${24 + (visible - 1) * 6}px` }}>
-              {Array.from({ length: visible }).map((_, j) => (
-                <div
-                  key={j}
-                  className={`absolute left-0 h-6 w-6 rounded-full border-[3px] border-dashed shadow ${p.edge} ${p.bg}`}
-                  style={{ bottom: `${j * 6}px` }}
-                >
-                  <div className="absolute inset-1 rounded-full border border-white/40" />
-                </div>
-              ))}
-            </div>
-            <span className="mt-0.5 text-[9px] font-semibold text-neutral-400">
-              {p.count > 5 ? `${p.v}×${p.count}` : p.v}
-            </span>
+          <div key={p.v} className="relative w-6" style={{ height: `${24 + (visible - 1) * 6}px` }}>
+            {Array.from({ length: visible }).map((_, j) => (
+              <div
+                key={j}
+                className={`absolute left-0 h-6 w-6 rounded-full border-[3px] border-dashed shadow ${p.edge} ${p.bg}`}
+                style={{ bottom: `${j * 6}px` }}
+              >
+                <div className="absolute inset-1 rounded-full border border-white/40" />
+              </div>
+            ))}
           </div>
         );
       })}
