@@ -6,8 +6,6 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5050";
 const PHONE = process.env.NEXT_PUBLIC_VAPI_PHONE || "+1 (657) 837-9072";
 const PHONE_DIGITS = PHONE.replace(/[^0-9+]/g, "");
 
-const SUIT = { s: "♠", h: "♥", d: "♦", c: "♣" } as const;
-
 type Player = {
   name: string;
   is_human: boolean;
@@ -48,25 +46,15 @@ function Card({ c, hidden, delay = 0 }: { c?: string | null; hidden?: boolean; d
   if (!c) {
     return <div className="h-20 w-14 rounded-lg border border-dashed border-amber-900/20 bg-amber-900/5" />;
   }
-  const rank = c[0] === "T" ? "10" : c[0];
-  const suit = c[1] as keyof typeof SUIT;
-  const red = suit === "h" || suit === "d";
-  const col = red ? "text-rose-600" : "text-neutral-900";
+  const code = (c[0] === "T" ? "10" : c[0]) + c[1].toUpperCase();
   return (
-    <div
-      className="deal-in relative h-20 w-14 rounded-lg border border-black/15 bg-gradient-to-br from-white to-neutral-100 shadow-md"
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`/cards/${code}.svg`}
+      alt={code}
+      className="deal-in h-20 w-14 rounded-lg bg-white shadow-md ring-1 ring-black/10"
       style={{ animationDelay: `${delay}ms` }}
-    >
-      <div className={`absolute left-1.5 top-1 flex flex-col items-center leading-none ${col}`}>
-        <span className="text-sm font-bold">{rank}</span>
-        <span className="text-[11px]">{SUIT[suit]}</span>
-      </div>
-      <div className={`absolute inset-0 flex items-center justify-center text-3xl ${col}`}>{SUIT[suit]}</div>
-      <div className={`absolute bottom-1 right-1.5 flex rotate-180 flex-col items-center leading-none ${col}`}>
-        <span className="text-sm font-bold">{rank}</span>
-        <span className="text-[11px]">{SUIT[suit]}</span>
-      </div>
-    </div>
+    />
   );
 }
 
